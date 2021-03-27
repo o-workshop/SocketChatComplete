@@ -20,44 +20,47 @@ class Server:
         print(f'Running on port: {self.port}')
 
         while True:
-            c, addr = self.s.accept()
+            conn, addr = self.s.accept()
 
-            username = c.recv(1024).decode()
+            username = conn.recv(1024).decode()
 
             print('New connection. Username: ' + str(username))
             self.broadcast('New user joined the room. Username: ' + username)
 
-            self.username_lookup[c] = username
+            self.username_lookup[conn] = username
 
-            self.clients.append(c)
+            self.clients.append(conn)
 
-            threading.Thread(target=self.handle_client, args=(c, addr,)).start()
+            threading.Thread(target=self.handle_client, args=(conn, addr,)).start()
+
+    def send_msg(self, conn, msg):
+        try:
+            conn.send(msg.encode())
+        except:
+            print('failed to send msg to: ' + conn)
 
     def broadcast(self, msg):
         for connection in self.clients:
-            try:
-                connection.send(msg.encode())
-            except:
-                print('failed to send msg to: ' + connection)
+            self.send_msg(connection, msg)
 
-    def handle_client(self, c, addr):
+    def handle_client(self, conn, addr):
+        username = self.username_lookup[conn]
         while True:
             try:
-                msg = c.recv(1024)
+                msg = conn.recv(1024)
             except:
-                c.shutdown(socket.SHUT_RDWR)
-                self.clients.remove(c)
+                conn.shutdown(socket.SHUT_RDWR)
+                self.clients.remove(conn)
 
-                print(str(self.username_lookup[c]) + ' left the room.')
-                self.broadcast(str(self.username_lookup[c]) + ' has left the room.')
-
+                print(f'{username} left the room.')
+                self.broadcast(f'{username} has left the room.')
                 break
 
             if msg.decode() != '':
-                print('New message: ' + str(msg.decode()))
+                print(f'New message from {username}: {str(msg.decode())}')
                 for connection in self.clients:
-                    if connection != c:
-                        connection.send(msg)
+                    if connection != conn:
+                        self.send_msg(connection, f'{username}: {msg.decode()}')
 
 
 server = Server()

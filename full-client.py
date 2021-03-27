@@ -4,7 +4,7 @@ import threading
 
 class Client:
     def __init__(self):
-        self.host = '127.0.0.1'
+        self.host = '165.22.177.88'
         self.port = 1234
         self.username = ''
         self.create_connection()
@@ -14,6 +14,7 @@ class Client:
 
         try:
             self.s.connect((self.host, self.port))
+
         except:
             print("Couldn't connect to server")
 
@@ -28,15 +29,19 @@ class Client:
 
     def handle_messages(self):
         while 1:
-            print(self.s.recv(1204).decode())
+            try:
+                print(self.s.recv(1204).decode())
+            except:
+                print("failed to receive")
 
     def input_handler(self):
         while 1:
-            msg = input(f'>')
+            msg = input('>')
             if str(msg) == "QUIT":
+                self.s.shutdown()
                 self.s.close()
                 exit(0)
-            self.s.send(f'{self.username} > {msg}'.encode())
+            self.s.send(str(msg).encode())
 
 
 client = Client()
