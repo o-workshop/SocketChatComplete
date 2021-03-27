@@ -1,6 +1,6 @@
 import socket
 import threading
-
+import sys
 
 class Client:
     def __init__(self):
@@ -38,9 +38,9 @@ class Client:
         while 1:
             msg = input('>')
             if str(msg) == "QUIT":
-                self.s.shutdown()
+                self.s.shutdown(socket.SHUT_RDWR)
                 self.s.close()
-                exit(0)
+                sys.exit()
             self.s.send(str(msg).encode())
 
 
