@@ -23,5 +23,6 @@ class AESCipher:
 secure = AESCipher(b"My Super Secret1")
 encrypted = secure.encrypt(b"Hello Ousmane")
 print(encrypted)
+
 decrypted = secure.decrypt(encrypted)
 print(decrypted)

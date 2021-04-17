@@ -10,16 +10,16 @@ class Client:
         self.create_connection()
 
     def create_connection(self):
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         try:
-            self.s.connect((self.host, self.port))
+            self.socket.connect((self.host, self.port))
 
         except:
             print("Couldn't connect to server")
 
         self.username = input('Enter username: ')
-        self.s.send(self.username.encode())
+        self.socket.send(self.username.encode())
 
         message_handler = threading.Thread(target=self.handle_messages, args=())
         message_handler.start()
@@ -28,20 +28,17 @@ class Client:
         input_handler.start()
 
     def handle_messages(self):
-        while 1:
-            try:
-                print(self.s.recv(1204).decode())
-            except:
-                print("failed to receive")
+        while True:
+            print(self.socket.recv(1204).decode())
 
     def input_handler(self):
-        while 1:
+        while True:
             msg = input('>')
             if str(msg) == "QUIT":
-                self.s.shutdown(socket.SHUT_RDWR)
-                self.s.close()
+                self.socket.shutdown(socket.SHUT_RDWR)
+                self.socket.close()
                 sys.exit()
-            self.s.send(str(msg).encode())
+            self.socket.send(str(msg).encode())
 
 
 client = Client()
